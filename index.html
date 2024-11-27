@@ -1,38 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1번 페이지</title>
-  <style>
-    body {
-      text-align: center;
-      font-family: Arial, sans-serif;
-      margin-top: 100px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 18px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>설문 시작</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff; /* 배경을 흰색으로 설정 */
+            margin: 0;
+            padding: 0;
+        }
+
+        .center-image {
+            margin-top: 50px;
+            max-width: 90%;
+            height: auto;
+        }
+
+        .play-button {
+            margin-top: 30px;
+            cursor: pointer;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+    </style>
+    <script>
+        // 랜덤 고유값 생성 함수
+        function generateUniqueId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
+        // 설문 시작 버튼 클릭 시 실행
+        function startSurvey() {
+            const userId = generateUniqueId();
+            window.location.href = "survey.html?" + userId; // survey.html로 이동하며 고유값 전달
+        }
+    </script>
 </head>
 <body>
-  <h1>심심할 때 뭐해?</h1>
-  <button id="startButton">Start</button>
+    <div class="container">
+        <!-- 이미지 삽입 (what.png) -->
+        <img src="what.png" alt="What is your choice?" class="center-image">
 
-  <script>
-    document.getElementById('startButton').addEventListener('click', function () {
-      // 2번 페이지로 이동
-      window.location.href = 'survey.html';
-    });
-  </script>
+        <!-- 이미지 버튼 (play.png) -->
+        <img src="play.png" alt="Start Survey" class="play-button" onclick="startSurvey()">
+    </div>
 </body>
 </html>
