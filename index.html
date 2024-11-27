@@ -1,12 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Portfolio</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>설문조사 시작</title>
 </head>
 <body>
-  <p>Hello, World!</p>
+    <h1>여가활동 추천 시스템</h1>
+    <p>설문을 시작하려면 아래 버튼을 클릭하세요.</p>
+    <button onclick="startSurvey()">Start</button>
+
+    <script>
+        function startSurvey() {
+            window.location.href = 'survey_page.html';  // 2번 페이지로 이동
+        }
+    </script>
 </body>
 </html>
