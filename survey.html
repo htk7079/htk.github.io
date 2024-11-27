@@ -1,30 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>설문조사</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>설문조사</title>
+    <script>
+        // URL에서 고유값을 가져오는 함수
+        function getUserId() {
+            const urlParams = window.location.search.slice(1); // '?' 뒤에 나오는 값만 가져오기
+            return urlParams; // 순수 고유값 반환
+        }
+
+        // 페이지 로드 시 구글폼 URL로 고유값을 전달하여 임베드
+        function embedGoogleForm() {
+            const userId = getUserId(); // URL에서 고유값 추출
+            
+            if (!userId) {
+                document.body.innerHTML = "<p>고유값이 없어 설문조사를 진행할 수 없습니다. 다시 시도해주세요.</p>";
+                return;
+            }
+
+            // 구글폼 URL (entry.538501145는 구글폼에서 사용자가 입력하는 필드 ID)
+            var formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSf7tWUPE2zPM-CxrQ1wZlhGALXKHHWOUH05QyVcSDdI6ep3WQ/viewform?entry.538501145=" + userId;
+            
+            // 구글폼을 임베드하여 표시
+            var iframe = document.createElement('iframe');
+            iframe.src = formUrl;
+            iframe.width = "800";
+            iframe.height = "700";
+            iframe.frameBorder = "0";
+            iframe.marginHeight = "0";
+            iframe.marginWidth = "0";
+            document.getElementById('google-form-container').appendChild(iframe);
+        }
+
+        // 결과 보기 페이지로 이동
+        function goToResultPage() {
+            const userId = getUserId(); // URL에서 고유값 추출
+            
+            if (!userId) {
+                alert("고유값이 없습니다. 설문을 완료한 후 다시 시도해주세요.");
+                return;
+            }
+
+            // 결과 페이지로 고유값 전달하며 이동
+            const resultUrl = "result.html?" + userId; // user_id= 없이 전달
+            window.location.href = resultUrl;
+        }
+
+        // 페이지가 로드되면 자동 실행
+        window.onload = embedGoogleForm;
+    </script>
 </head>
 <body>
-  <h1>설문조사</h1>
-  <iframe id="googleForm" width="640" height="2897" frameborder="0"></iframe>
-  <script>
-    // UUID 생성 함수
-    function generateUUID() {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    }
-
-    // UUID 생성 및 Google Forms URL 생성
-    const uuid = generateUUID();
-    const googleFormUrl = `https://docs.google.com/forms/d/e/1FAIpQLSf7tWUPE2zPM-CxrQ1wZlhGALXKHHWOUH05QyVcSDdI6ep3WQ/viewform?usp=pp_url&entry.123456=${uuid}`; 
-    document.getElementById('googleForm').src = googleFormUrl;
-
-    // UUID 저장 (3번 페이지에서 사용)
-    localStorage.setItem('userUUID', uuid);
-  </script>
-  <button onclick="location.href='results.html'">설문 완료</button>
+    <h1>활동 및 장소 추천을 위하여 조사를 시작합니다. </h1>
+    
+    <!-- 구글폼 임베드가 들어갈 위치 -->
+    <div id="google-form-container"></div>
+    
+    <!-- 결과 보기 버튼 -->
+    <div style="margin-top: 20px; text-align: center;">
+        <button onclick="goToResultPage()">결과 보기</button>
+    </div>
 </body>
 </html>
