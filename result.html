@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>설문조사 결과</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    .result {
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      width: 80%;
+      background: #f9f9f9;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>설문조사 결과</h1>
+  <div class="result" id="resultBox">
+    결과를 불러오는 중입니다...
+  </div>
+  <button onclick="window.location.href='recommendation.html'">내 주변 장소 추천받기</button>
+
+  <script>
+    async function fetchResults() {
+      // Google Sheets API를 통해 데이터를 가져옵니다 (샘플 URL 사용).
+      const sheetUrl = "https://sheets.googleapis.com/v4/spreadsheets/YOUR_SHEET_ID/values/Sheet1?key=YOUR_API_KEY";
+      const response = await fetch(sheetUrl);
+      const data = await response.json();
+
+      // 데이터를 ChatGPT API로 분석 요청 (단순 예시).
+      const chatGPTResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer YOUR_CHATGPT_API_KEY',
+        },
+        body: JSON.stringify({
+          model: "gpt-4",
+          messages: [
+            { role: "system", content: "Analyze survey data and provide a summary." },
+            { role: "user", content: JSON.stringify(data.values) }
+          ],
+        }),
+      });
+
+      const chatGPTResult = await chatGPTResponse.json();
+      document.getElementById('resultBox').textContent = chatGPTResult.choices[0].message.content;
+    }
+
+    // 페이지 로드 시 결과 불러오기
+    fetchResults();
+  </script>
+</body>
+</html>
