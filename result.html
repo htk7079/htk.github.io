@@ -1,74 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>설문조사 결과</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 50px;
-    }
-    .result {
-      margin: 20px auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      width: 80%;
-      background: #f9f9f9;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 18px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결과 보기</title>
+    <script>
+        // URL에서 고유값을 가져오는 함수
+        function getUserId() {
+            const urlParams = window.location.search.slice(1); // '?' 뒤의 고유값만 추출
+            return urlParams;
+        }
+
+        // 페이지 로드 시 고유값 기반으로 결과 출력
+        function displayResult() {
+            const userId = getUserId(); // URL에서 고유값 추출
+
+            if (!userId) {
+                document.body.innerHTML = "<p>고유값이 없어 결과를 표시할 수 없습니다. 다시 시도해주세요.</p>";
+                return;
+            }
+
+            // 고유값 확인 메시지 (디버깅용)
+            console.log("고유값:", userId);
+
+            // 예제: 결과 데이터를 표시 (추후 GPT API 통신 코드로 대체 가능)
+            document.getElementById("result-display").innerText =
+                `결과 분석 중... (API 연동 필요)`;
+
+            // 실제 API 요청 예시 (추후 스프레드시트/GPT와 연결)
+            // fetch('/your-api-endpoint', {
+            //     method: 'POST',
+            //     body: JSON.stringify({ userId: userId }),
+            //     headers: { 'Content-Type': 'application/json' }
+            // }).then(response => response.json())
+            //   .then(data => {
+            //       document.getElementById("result-display").innerText = `추천 활동: ${data.activity}`;
+            //   }).catch(error => console.error('Error:', error));
+        }
+
+        // 추천 장소 페이지로 이동
+        function goToRecommendationPage() {
+            const userId = getUserId(); // URL에서 고유값 추출
+
+            if (!userId) {
+                alert("고유값이 없습니다. 다시 시도해주세요.");
+                return;
+            }
+
+            // 추천 장소 페이지로 고유값 전달하며 이동
+            const recommendationUrl = "recommend.html?" + userId; // user_id= 없이 전달
+            window.location.href = recommendationUrl;
+        }
+
+        // 페이지가 로드되면 결과 표시 함수 실행
+        window.onload = displayResult;
+    </script>
 </head>
 <body>
-  <h1>설문조사 결과</h1>
-  <div class="result" id="resultBox">
-    결과를 불러오는 중입니다...
-  </div>
-  <button onclick="window.location.href='recommendation.html'">내 주변 장소 추천받기</button>
-
-  <script>
-    async function fetchResults() {
-      // Google Sheets API를 통해 데이터를 가져옵니다 (샘플 URL 사용).
-      const sheetUrl = "https://sheets.googleapis.com/v4/spreadsheets/YOUR_SHEET_ID/values/Sheet1?key=YOUR_API_KEY";
-      const response = await fetch(sheetUrl);
-      const data = await response.json();
-
-      // 데이터를 ChatGPT API로 분석 요청 (단순 예시).
-      const chatGPTResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer YOUR_CHATGPT_API_KEY',
-        },
-        body: JSON.stringify({
-          model: "gpt-4",
-          messages: [
-            { role: "system", content: "Analyze survey data and provide a summary." },
-            { role: "user", content: JSON.stringify(data.values) }
-          ],
-        }),
-      });
-
-      const chatGPTResult = await chatGPTResponse.json();
-      document.getElementById('resultBox').textContent = chatGPTResult.choices[0].message.content;
-    }
-
-    // 페이지 로드 시 결과 불러오기
-    fetchResults();
-  </script>
+    <h1>결과 보기</h1>
+    <div id="result-display" style="white-space: pre-wrap; margin: 20px;">
+        <!-- 결과 내용이 표시될 위치 -->
+        결과를 불러오는 중입니다...
+    </div>
+    
+    <!-- 추천 장소로 이동하는 버튼 -->
+    <div style="text-align: center; margin-top: 20px;">
+        <button onclick="goToRecommendationPage()">추천 장소 보기</button>
+    </div>
 </body>
 </html>
