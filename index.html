@@ -1,19 +1,38 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>설문조사 시작</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1번 페이지</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      margin-top: 100px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
-    <h1>여가활동 추천 시스템</h1>
-    <p>설문을 시작하려면 아래 버튼을 클릭하세요.</p>
-    <button onclick="startSurvey()">Start</button>
+  <h1>심심할 때 뭐해?</h1>
+  <button id="startButton">Start</button>
 
-    <script>
-        function startSurvey() {
-            window.location.href = 'survey_page.html';  // 2번 페이지로 이동
-        }
-    </script>
+  <script>
+    document.getElementById('startButton').addEventListener('click', function () {
+      // 2번 페이지로 이동
+      window.location.href = 'survey.html';
+    });
+  </script>
 </body>
 </html>
