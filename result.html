@@ -3,69 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>결과 보기</title>
+    <title>활동 추천</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        button {
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
     <script>
-        // URL에서 고유값을 가져오는 함수
-        function getUserId() {
-            const urlParams = window.location.search.slice(1); // '?' 뒤의 고유값만 추출
-            return urlParams;
+        // 구글 시트 데이터를 가져오는 함수
+        async function fetchSurveyData(userId) {
+            try {
+                const response = await fetch(
+                    `https://sheets.googleapis.com/v4/spreadsheets/1GUsoJJ6XRbGJNjXz9R4YxOItk91_3yv65CExCLhdSwQ/values/Sheet1?key=AIzaSyC6F-jES8D2gRDPJk56sctPef2btGnb3sk`
+                );
+                const data = await response.json();
+                const rows = data.values;
+
+                // 첫 번째 행(헤더)을 분리
+                const headers = rows[0];
+                const userData = rows.find(row => row[headers.length - 1] === userId); // 고유값으로 데이터 찾기
+
+                if (!userData) {
+                    alert("사용자의 설문 데이터를 찾을 수 없습니다.");
+                    return null;
+                }
+
+                // 타임스탬프 제외 & 답변이 없는 질문 제외
+                const questionAnswerPairs = headers.slice(1, -1).map((header, index) => {
+                    const answer = userData[index + 1];
+                    return answer ? { question: header, answer: answer } : null; // 답변이 없는 질문은 제외
+                }).filter(pair => pair !== null);
+
+                return questionAnswerPairs; // GPT 프롬프트로 사용하기 위해 배열로 반환
+            } catch (error) {
+                console.error("구글 시트 데이터 가져오기 실패:", error);
+                alert("설문 데이터를 불러오는 중 오류가 발생했습니다.");
+                return null;
+            }
         }
 
-        // 페이지 로드 시 고유값 기반으로 결과 출력
-        function displayResult() {
-            const userId = getUserId(); // URL에서 고유값 추출
+        // ChatGPT API로 활동 추천받기
+        async function getActivityRecommendations(prompt) {
+            const apiKey = "YOUR_CHATGPT_API_KEY";
 
+            try {
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${apiKey}`,
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-3.5-turbo",
+                        messages: [{ role: "user", content: `다음 설문 데이터를 기반으로 활동을 추천해 주세요:\n\n${prompt}` }],
+                        max_tokens: 200,
+                    }),
+                });
+
+                const result = await response.json();
+                return result.choices[0].message.content; // 추천 결과 텍스트
+            } catch (error) {
+                console.error("ChatGPT API 호출 실패:", error);
+                alert("추천을 생성하는 중 오류가 발생했습니다.");
+                return null;
+            }
+        }
+
+        // 설문 데이터를 표로 출력하고 추천된 활동을 표시
+        async function displayRecommendations() {
+            const userId = window.location.search.slice(1); // URL에서 고유값 추출
             if (!userId) {
-                document.body.innerHTML = "<p>고유값이 없어 결과를 표시할 수 없습니다. 다시 시도해주세요.</p>";
+                document.body.innerHTML = "<p>고유값이 없어 결과를 표시할 수 없습니다. 다시 시도해 주세요.</p>";
                 return;
             }
 
-            // 고유값 확인 메시지 (디버깅용)
-            console.log("고유값:", userId);
+            const surveyData = await fetchSurveyData(userId);
+            if (!surveyData) return;
 
-            // 예제: 결과 데이터를 표시 (추후 GPT API 통신 코드로 대체 가능)
-            document.getElementById("result-display").innerText =
-                `결과 분석 중... (API 연동 필요)`;
+            // 설문 데이터를 표 형식으로 출력
+            let tableHTML = "<table><tr><th>질문</th><th>답변</th></tr>";
+            surveyData.forEach(item => {
+                tableHTML += `<tr><td>${item.question}</td><td>${item.answer}</td></tr>`;
+            });
+            tableHTML += "</table>";
 
-            // 실제 API 요청 예시 (추후 스프레드시트/GPT와 연결)
-            // fetch('/your-api-endpoint', {
-            //     method: 'POST',
-            //     body: JSON.stringify({ userId: userId }),
-            //     headers: { 'Content-Type': 'application/json' }
-            // }).then(response => response.json())
-            //   .then(data => {
-            //       document.getElementById("result-display").innerText = `추천 활동: ${data.activity}`;
-            //   }).catch(error => console.error('Error:', error));
+            document.getElementById("surveyData").innerHTML = tableHTML;
+
+            // GPT API 호출을 위한 프롬프트
+            const surveyPrompt = surveyData.map(item => `${item.question}: ${item.answer}`).join("\n");
+            const recommendation = await getActivityRecommendations(surveyPrompt);
+            if (recommendation) {
+                document.getElementById("recommendation").textContent = recommendation;
+            }
         }
 
-        // 추천 장소 페이지로 이동
-        function goToRecommendationPage() {
-            const userId = getUserId(); // URL에서 고유값 추출
-
+        // 다음 페이지로 이동
+        function goToNextPage() {
+            const userId = window.location.search.slice(1);
             if (!userId) {
-                alert("고유값이 없습니다. 다시 시도해주세요.");
+                alert("고유값이 없어 장소 추천 페이지로 이동할 수 없습니다.");
                 return;
             }
-
-            // 추천 장소 페이지로 고유값 전달하며 이동
-            const recommendationUrl = "recommend.html?" + userId; // user_id= 없이 전달
-            window.location.href = recommendationUrl;
+            window.location.href = "location.html?" + userId;
         }
 
-        // 페이지가 로드되면 결과 표시 함수 실행
-        window.onload = displayResult;
+        // 페이지 로드 후 실행
+        window.onload = displayRecommendations;
     </script>
 </head>
 <body>
-    <h1>결과 보기</h1>
-    <div id="result-display" style="white-space: pre-wrap; margin: 20px;">
-        <!-- 결과 내용이 표시될 위치 -->
-        결과를 불러오는 중입니다...
-    </div>
-    
-    <!-- 추천 장소로 이동하는 버튼 -->
-    <div style="text-align: center; margin-top: 20px;">
-        <button onclick="goToRecommendationPage()">추천 장소 보기</button>
+    <div class="container">
+        <h1>활동 추천</h1>
+
+        <h2>설문 데이터</h2>
+        <div id="surveyData">
+            데이터를 불러오는 중입니다...
+        </div>
+
+        <h2>추천된 활동</h2>
+        <p id="recommendation">활동을 추천받는 중입니다...</p>
+
+        <button onclick="goToNextPage()">장소 추천 보러 가기</button>
     </div>
 </body>
 </html>
