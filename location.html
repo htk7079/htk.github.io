@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가장 가까운 학교 찾기</title>
+    <script type="text/javascript" src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+    <style>
+        #map { width: 100%; height: 400px; }
+        #loading { text-align: center; font-size: 20px; color: #888; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>가장 가까운 학교 찾기</h1>
+    <div id="loading">로딩 중...</div>
+    <div id="map"></div>
+
+    <script>
+        // 카카오맵 API 초기화
+        Kakao.init('YOUR_KAKAO_APP_KEY');
+
+        // 사용자의 현재 위치를 얻는 함수
+        function getUserLocation() {
+            return new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve(position.coords);
+                    },
+                    (error) => {
+                        reject(error);
+                    }
+                );
+            });
+        }
+
+        // 가장 가까운 학교 찾기
+        async function loadMap() {
+            try {
+                const userLocation = await getUserLocation();
+                const lat = userLocation.latitude;
+                const lng = userLocation.longitude;
+
+                // 카카오맵 지도 생성
+                const mapContainer = document.getElementById("map");
+                const mapOption = {
+                    center: new Kakao.maps.LatLng(lat, lng),
+                    level: 3,
+                };
+                const map = new Kakao.maps.Map(mapContainer, mapOption);
+
+                // 사용자 위치 표시
+                const userPosition = new Kakao.maps.LatLng(lat, lng);
+                const userMarker = new Kakao.maps.Marker({
+                    position: userPosition,
+                });
+                userMarker.setMap(map);
+
+                // 학교 검색
+                const ps = new Kakao.maps.services.Places();
+                ps.keywordSearch('학교', function(data, status, pagination) {
+                    if (status === Kakao.maps.services.Status.OK) {
+                        const closestSchool = data[0]; // 가장 가까운 학교 (첫 번째 결과)
+                        const schoolPosition = new Kakao.maps.LatLng(closestSchool.y, closestSchool.x);
+                        
+                        // 학교 마커 생성
+                        const schoolMarker = new Kakao.maps.Marker({
+                            position: schoolPosition,
+                        });
+                        schoolMarker.setMap(map);
+
+                        // 로딩 메시지 숨기기
+                        document.getElementById("loading").style.display = "none";
+                    } else {
+                        alert("학교를 찾을 수 없습니다.");
+                        document.getElementById("loading").style.display = "none";
+                    }
+                });
+            } catch (error) {
+                console.error("위치 정보를 가져오는 데 실패했습니다.", error);
+                alert("위치 정보를 가져오는 데 실패했습니다.");
+                document.getElementById("loading").style.display = "none";
+            }
+        }
+
+        // 페이지 로드 시 맵을 로드합니다.
+        window.onload = loadMap;
+    </script>
+</body>
+</html>
