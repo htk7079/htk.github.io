@@ -59,8 +59,8 @@
 
                 // 첫 번째 행(헤더)을 분리
                 const headers = rows[0];
-                const userData = rows.find(row => row[headers.indexOf("고유값")] === userId);
-
+                const userData = rows.find(row => row[headers.length - 1] === userId); // 고유값으로 데이터 찾기
+                
                 if (!userData) {
                     alert("사용자의 설문 데이터를 찾을 수 없습니다.");
                     return null;
