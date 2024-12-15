@@ -47,12 +47,13 @@
             background-color: #45a049;
         }
     </style>
+    <script src="apikey.js"></script> <!-- apikey.js 파일을 불러옴 -->
     <script>
         // 구글 시트 데이터를 가져오는 함수
         async function fetchSurveyData(userId) {
             try {
                 const response = await fetch(
-                    'https://sheets.googleapis.com/v4/spreadsheets/1GUsoJJ6XRbGJNjXz9R4YxOItk91_3yv65CExCLhdSwQ/values/Sheet1?key=AIzaSyC6F-jES8D2gRDPJk56sctPef2btGnb3sk'
+                    `https://sheets.googleapis.com/v4/spreadsheets/1GUsoJJ6XRbGJNjXz9R4YxOItk91_3yv65CExCLhdSwQ/values/Sheet1?key=AIzaSyC6F-jES8D2gRDPJk56sctPef2btGnb3sk`
                 );
                 const data = await response.json();
                 const rows = data.values;
@@ -86,21 +87,26 @@
             }
         }
 
-        // GPT API로 활동 추천받기
+        // ChatGPT API로 활동 추천받기
         async function getActivityRecommendations(prompt) {
             try {
-                const response = await fetch('/get-recommendation', {
-                    method: 'POST',
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                    method: "POST",
                     headers: {
-                        'Content-Type': 'application/json',
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${apiKey}`, // apiKey 변수 사용
                     },
-                    body: JSON.stringify({ prompt: `다음 설문 데이터를 기반으로 장소를 추천해주는데 똑같이 적지말고 창의적이게 한문장으로 적어줘:\n\n${prompt}` })
+                    body: JSON.stringify({
+                        model: "gpt-3.5-turbo",
+                        messages: [{ role: "user", content: `다음 설문 데이터를 기반으로 장소를 추천해주는데 똑같이 적지말고 창의적이게 한문장으로 적어줘:\n\n${prompt}` }],
+                        max_tokens: 200,
+                    }),
                 });
 
                 const result = await response.json();
-                return result.recommendation; // 추천 결과 텍스트
+                return result.choices[0].message.content; // 추천 결과 텍스트
             } catch (error) {
-                console.error("추천 API 호출 실패:", error);
+                console.error("ChatGPT API 호출 실패:", error);
                 alert("추천을 생성하는 중 오류가 발생했습니다.");
                 return null;
             }

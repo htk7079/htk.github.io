@@ -1,49 +1,45 @@
-const express = require("express");
-const axios = require("axios");
-const dotenv = require("dotenv");
-const cors = require("cors");
-
-dotenv.config();
+require('dotenv').config();
+const express = require('express');
+const axios = require('axios');
+const cors = require('cors');  // CORS 패키지 추가
 
 const app = express();
-const port = 8000;
+const port = process.env.PORT || 8000;
 
-app.use(cors());
-app.use(express.json()); // POST 요청에 대한 본문 파싱
+app.use(cors());  // 모든 출처에서의 요청을 허용
+app.use(express.static('public'));
+app.use(express.json());
 
-// /get-recommendation 엔드포인트
-app.post("/get-recommendation", async (req, res) => {
-    const apiKey = process.env.OPENAI_API_KEY;
-    const { prompt } = req.body; // 클라이언트로부터 받은 prompt
-
-    if (!prompt) {
-        return res.status(400).send("Prompt가 제공되지 않았습니다.");
-    }
+// Endpoint to handle the GPT API request
+app.post('/gpt-api', async (req, res) => {
+    const userInput = req.body.input;
 
     try {
         const response = await axios.post(
-            "https://api.openai.com/v1/chat/completions",
+            'https://api.openai.com/v1/chat/completions',
             {
-                model: "gpt-3.5-turbo",
-                messages: [{ role: "user", content: prompt }],
-                max_tokens: 200,
+                model: 'gpt-3.5-turbo',
+                messages: [
+                    { role: 'system', content: 'You are a helpful assistant.' },
+                    { role: 'user', content: userInput }
+                ],
+                max_tokens: 200
             },
             {
                 headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${apiKey}`,
-                },
+                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
             }
         );
 
-        const recommendation = response.data.choices[0].message.content;
-        res.json({ recommendation });
+        res.json({ output: response.data.choices[0].message.content.trim() });
     } catch (error) {
-        console.error("GPT API 호출 실패:", error.response ? error.response.data : error.message);
-        res.status(500).send("추천을 생성하는 중 오류가 발생했습니다.");
+        console.error(error);
+        res.status(500).json({ output: "An error occurred while fetching data from GPT." });
     }
 });
 
 app.listen(port, () => {
-    console.log(`서버가 http://localhost:${port}에서 실행 중입니다.`);
+    console.log(`Server running on http://localhost:${port}`);
 });
