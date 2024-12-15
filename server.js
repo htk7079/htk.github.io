@@ -1,21 +1,26 @@
-// server.js
 const express = require("express");
 const axios = require("axios");
 const dotenv = require("dotenv");
-dotenv.config(); // .env 파일을 읽어 환경 변수로 로드
+const cors = require("cors");
+
+dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 8000;
 
-// 요청 본문을 JSON으로 처리
-app.use(express.json());
+app.use(cors());
+app.use(express.json()); // POST 요청에 대한 본문 파싱
 
+// /get-recommendation 엔드포인트
 app.post("/get-recommendation", async (req, res) => {
-    const prompt = req.body.prompt; // 프롬프트는 클라이언트로부터 전달받음
     const apiKey = process.env.OPENAI_API_KEY;
+    const { prompt } = req.body; // 클라이언트로부터 받은 prompt
+
+    if (!prompt) {
+        return res.status(400).send("Prompt가 제공되지 않았습니다.");
+    }
 
     try {
-        // GPT API 호출
         const response = await axios.post(
             "https://api.openai.com/v1/chat/completions",
             {
@@ -25,21 +30,20 @@ app.post("/get-recommendation", async (req, res) => {
             },
             {
                 headers: {
-                    Authorization: `Bearer ${apiKey}`,
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${apiKey}`,
                 },
             }
         );
 
         const recommendation = response.data.choices[0].message.content;
-        res.json({ recommendation }); // 클라이언트에 추천 결과 전달
+        res.json({ recommendation });
     } catch (error) {
-        console.error("GPT API 호출 실패:", error);
+        console.error("GPT API 호출 실패:", error.response ? error.response.data : error.message);
         res.status(500).send("추천을 생성하는 중 오류가 발생했습니다.");
     }
 });
 
-// 서버 시작
 app.listen(port, () => {
-    console.log(`서버가 ${port}번 포트에서 실행 중입니다.`);
+    console.log(`서버가 http://localhost:${port}에서 실행 중입니다.`);
 });
