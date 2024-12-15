@@ -1,3 +1,3 @@
-// main.js
-const apiKey = require('./apikey.js');
-console.log(apiKey);  // API 키가 제대로 불러와졌는지 확인
+// 다른 파일에서
+import { apiKey } from './apikey.js';
+console.log(apiKey);
