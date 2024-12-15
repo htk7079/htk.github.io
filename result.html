@@ -94,7 +94,7 @@
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${apiKey}`, // apiKey 변수 사용
+                        Authorization: `Bearer ${apiKey}`, // apikey.js에서 불러온 apiKey 사용
                     },
                     body: JSON.stringify({
                         model: "gpt-3.5-turbo",
