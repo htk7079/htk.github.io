@@ -12,33 +12,39 @@ app.use(express.json());
 
 // Endpoint to handle the GPT API request
 app.post('/gpt-api', async (req, res) => {
-    const userInput = req.body.input;
+  const userInput = req.body.input;
+  
+  // 로그를 찍어서 요청이 제대로 들어오는지 확인
+  console.log('Received request:', userInput);
+  
+  try {
+      const response = await axios.post(
+          'https://api.openai.com/v1/chat/completions',
+          {
+              model: 'gpt-3.5-turbo',
+              messages: [
+                  { role: 'system', content: 'You are a helpful assistant.' },
+                  { role: 'user', content: userInput }
+              ],
+              max_tokens: 100
+          },
+          {
+              headers: {
+                  'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                  'Content-Type': 'application/json'
+              }
+          }
+      );
 
-    try {
-        const response = await axios.post(
-            'https://api.openai.com/v1/chat/completions',
-            {
-                model: 'gpt-3.5-turbo',
-                messages: [
-                    { role: 'system', content: 'You are a helpful assistant.' },
-                    { role: 'user', content: userInput }
-                ],
-                max_tokens: 200
-            },
-            {
-                headers: {
-                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
+      console.log('Response from GPT:', response.data);  // GPT 응답 로그 추가
 
-        res.json({ output: response.data.choices[0].message.content.trim() });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ output: "An error occurred while fetching data from GPT." });
-    }
+      res.json({ output: response.data.choices[0].message.content.trim() });
+  } catch (error) {
+      console.error('Error:', error);  // 오류가 발생하면 로그 출력
+      res.status(500).json({ output: "An error occurred while fetching data from GPT." });
+  }
 });
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
